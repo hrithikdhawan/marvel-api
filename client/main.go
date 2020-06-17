@@ -15,11 +15,11 @@ var client = &http.Client{}
 var character = []string{"Iron man", "Captain America", "Spider man", "Black Panther", "Vision", "Hawk eye"}
 
 func main() {
-	//	func1()
-	func2()
+	func1()
+	//challenge2()
 
 }
-func func2() {
+func challenge2() {
 	c := make(chan error, 1)
 	go initialiseAvengers(c)
 	_ = <-c
@@ -93,11 +93,12 @@ func addAvenger(c chan error) {
 	defer res.Body.Close()
 	p, err = ioutil.ReadAll(res.Body)
 	checkRemoved(string(p), "Thor")
-
+	json = []byte(`{  "name": "Doctor Strange", "max_power": 78 }`)
 	res, err = http.Post("http://localhost:9876/avengers/character", "apllication/json", bytes.NewBuffer(json))
 	defer res.Body.Close()
 	p, err = ioutil.ReadAll(res.Body)
 	checkRemoved(string(p), "Doctor Strange")
+	json = []byte(`{  "name": "Black Widow", "max_power": 40 }`)
 	res, err = http.Post("http://localhost:9876/avengers/character", "apllication/json", bytes.NewBuffer(json))
 	defer res.Body.Close()
 	p, err = ioutil.ReadAll(res.Body)

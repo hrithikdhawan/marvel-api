@@ -16,13 +16,14 @@ var servemux = mux.NewRouter()
 
 func main() {
 	l := log.New(os.Stdout, "marvel ", log.LstdFlags)
-	handler := handlers.NewUniverse(l)
 
-	setUpAvengers(handler)
+	avenger := handlers.NewMarvel(l, "Avengers")
+	antiHero := handlers.NewMarvel(l, "AntiHeroes")
+	mutant := handlers.NewMarvel(l, "Mutants")
 
-	setUpAntiHeroes(handler)
-
-	setUpMutants(handler)
+	setUp(avenger, "/avengers")
+	setUp(antiHero, "/anti-heroes")
+	setUp(mutant, "/mutants")
 
 	s := http.Server{
 		Addr:     ":9876",
@@ -49,17 +50,41 @@ func main() {
 
 }
 
+func setUp(handler *handlers.Universe, marvel string) {
+	getRouter := servemux.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc(marvel, handler.GetAll)
+	getRouter.HandleFunc(marvel+"/character/{name}", handler.Use)
+	getRouter.HandleFunc(marvel+"/character/challenge/{name}", handler.UseChallenge)
+
+	postRouter := servemux.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc(marvel+"/character", handler.Add)
+	postRouter.HandleFunc(marvel+"/character/challenge", handler.AddChallenge)
+
+	postRouter.HandleFunc(marvel, handler.AddAll) // update All also
+
+	putRouter := servemux.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc(marvel, handler.Update) // single update
+	getRouter.HandleFunc(marvel+"/character/{name}/{power}", handler.UpdatePower)
+
+	deleteRouter := servemux.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc(marvel+"/character/{name}", handler.Delete)
+
+	patchtRouter := servemux.Methods(http.MethodPatch).Subrouter()
+	patchtRouter.HandleFunc(marvel+"/character/{name}", handler.Restore)
+}
+
+/*
 func setUpAvengers(handler *handlers.Universe) {
 	getRouter := servemux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/avengers", handler.GetAllAvengers)
+	getRouter.HandleFunc("/avengers", handler.GetAll)
 	getRouter.HandleFunc("/avengers/character/{name}", handler.UseAvenger)
 	getRouter.HandleFunc("/avengers/character/challenge/{name}", handler.UseAvengerChallenge)
 
 	postRouter := servemux.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/avengers/character", handler.AddAvenger)
+	postRouter.HandleFunc("/avengers/character", handler.Add)
 	postRouter.HandleFunc("/avengers/character/challenge", handler.AddAvengerChallenge)
 
-	postRouter.HandleFunc("/avengers", handler.AddAllAvengers) // update All also
+	postRouter.HandleFunc("/avengers", handler.AddAll) // update All also
 
 	putRouter := servemux.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/avengers", handler.UpdateAvenger) // single update
@@ -114,3 +139,4 @@ func setUpMutants(handler *handlers.Universe) {
 	patchtRouter.HandleFunc("/mutants/character/{name}", handler.RestoreMutant)
 
 }
+*/
